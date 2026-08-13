@@ -16,17 +16,102 @@ resource "libvirt_volume" "debian_cloud_base" {
   }
 }
 
-#resource "libvirt_network" "cluster_net" {
-#}
-#
-#resource "libvirt_domain" "jumpbox" {
-#}
-#
-#resource "libvirt_domain" "server" {
-#}
-#
-#resource "libvirt_domain" "node-0" {
-#}
-#
-#resource "libvirt_domain" "node-1" {
-#}
+variable "vm_specs" {
+  type = map(map(string))
+  default = {
+    jumpbox = {
+      hostname = "jumpbox"
+      memory = 512
+      memory_unit = "MiB"
+      capacity = 10
+      capacity_unit = "GiB"
+    }
+    server = {
+      hostname = "server"
+      memory = 2
+      memory_unit = "GiB"
+      capacity = 20
+      capacity_unit = "GiB"
+    }
+    node0 = {
+      hostname = "node-0"
+      memory = 2
+      memory_unit = "GiB"
+      capacity = 20
+      capacity_unit = "GiB"
+    }
+    node1 = {
+      hostname = "node-1"
+      memory = 2
+      memory_unit = "GiB"
+      capacity = 20
+      capacity_unit = "GiB"
+    }
+  }
+}
+
+resource "libvirt_domain" "vms" {
+  for_each = var.vm_specs
+  name = "cluster-${each.value.hostname}"
+  memory = each.value.memory
+  memory_unit = each.value.memory_unit
+  vcpu = 1
+  type = "kvm"
+
+  os = {
+    type = "hvm"
+    type_arch = "x86_64"
+    type_machine = "q35"
+    boot_devices = [
+      {
+        dev = "hd"
+      }
+    ]
+  }
+
+  devices = {
+    disks = [
+      {
+        source = {
+          file = {
+            file = "/path/from/volume/output"
+          }
+        }
+        target = {
+          dev = "vda"
+          bus = "virtio"
+        }
+      },
+      {
+        source = {
+          file = {
+            file = "/path/from/cloudinit/output"
+          }
+        }
+        target = {
+          dev = "vdb"
+          bus = "virtio"
+        }
+      }
+    ]
+    interfaces = [
+      {
+        model = {
+          type = "virtio"
+        }
+        source = {
+          network = {
+            network = "cluster-internal"
+          }
+        }
+      },
+      {
+        source = {
+          bridge = {
+            bridge = "br0"
+          }
+        }
+      }
+    ]
+  }
+}
