@@ -84,8 +84,9 @@ resource "libvirt_domain" "vms" {
       },
       {
         source = {
-          file = {
-            file = "/path/from/cloudinit/output"
+          volume = {
+            pool = libvirt_volume.cloudinit_volumes[each.key].pool
+            volume = libvirt_volume.cloudinit_volumes[each.key].name
           }
         }
         target = {
@@ -110,5 +111,27 @@ resource "libvirt_domain" "vms" {
         }
       }
     ]
+  }
+}
+
+resource "libvirt_cloudinit_disk" "inits" {
+  for_each = var.vm_specs
+  name = "cluster-init-${each.key}"
+  user_data = file("user-data.yaml")
+  meta_data = yamlencode({
+    instance-id    = each.key
+    local-hostname = each.value.hostname
+  })
+}
+
+resource "libvirt_volume" "cloudinit_volumes" {
+  for_each = var.vm_specs
+  name = "cluster-cloudinit-${each.key}"
+  pool = "default"
+
+  create = {
+    content = {
+      url = libvirt_cloudinit_disk.inits[each.key].path
+    }
   }
 }
