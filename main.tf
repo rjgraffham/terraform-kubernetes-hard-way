@@ -56,11 +56,11 @@ resource "libvirt_network" "cluster_net" {
     mode = "nat"
   }
   ips = [{
-    address = "192.168.122.0"
+    address = "192.168.122.1"
     netmask = "255.255.255.0"
     dhcp = {
       ranges = [{
-        start = "192.168.122.2"
+        start = "192.168.122.100"
         end = "192.168.122.254"
       }]
     }
