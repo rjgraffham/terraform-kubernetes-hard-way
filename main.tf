@@ -1,5 +1,10 @@
 provider "libvirt" {}
 
+variable "running" {
+  type = bool
+  default = true
+}
+
 variable "ip_prefix" {
   type = string
   default = "192.168.122"
@@ -82,7 +87,7 @@ resource "libvirt_domain" "vms" {
   vcpu = 1
   type = "kvm"
 
-  running = true
+  running = var.running
 
   metadata = {
     xml = <<-EOX
