@@ -108,7 +108,7 @@ resource "libvirt_domain" "vms" {
       {
         source = {
           bridge = {
-            bridge = "br0"
+            bridge = "virbr0"
           }
         }
       }
