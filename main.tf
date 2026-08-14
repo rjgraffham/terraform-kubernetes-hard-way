@@ -96,12 +96,9 @@ resource "libvirt_domain" "vms" {
     ]
     interfaces = [
       {
-        model = {
-          type = "virtio"
-        }
         source = {
-          network = {
-            network = "cluster-internal"
+          internal = {
+            name = "cluster-internal"
           }
         }
       },
