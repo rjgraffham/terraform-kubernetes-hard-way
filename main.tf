@@ -1,21 +1,5 @@
 provider "libvirt" {}
 
-resource "libvirt_volume" "debian_cloud_base" {
-  name = "debian-12-generic-amd64.qcow2"
-  pool = "default"
-  target = {
-    format = {
-      type = "qcow2"
-    }
-  }
-
-  create = {
-    content = {
-      url = "https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-nocloud-amd64.qcow2"
-    }
-  }
-}
-
 variable "ip_prefix" {
   type = string
   default = "192.168.122"
@@ -199,6 +183,22 @@ resource "libvirt_domain" "vms" {
         random = "/dev/urandom"
       }
     }]
+  }
+}
+
+resource "libvirt_volume" "debian_cloud_base" {
+  name = "debian-12-generic-amd64.qcow2"
+  pool = "default"
+  target = {
+    format = {
+      type = "qcow2"
+    }
+  }
+
+  create = {
+    content = {
+      url = "https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-nocloud-amd64.qcow2"
+    }
   }
 }
 
