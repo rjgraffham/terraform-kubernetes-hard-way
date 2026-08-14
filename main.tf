@@ -58,6 +58,12 @@ resource "libvirt_network" "cluster_net" {
   ips = [{
     address = "192.168.122.0"
     netmask = "255.255.255.0"
+    dhcp = {
+      ranges = [{
+        start = "192.168.122.2"
+        end = "192.168.122.254"
+      }]
+    }
   }]
 }
 
