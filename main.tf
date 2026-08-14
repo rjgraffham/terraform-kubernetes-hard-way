@@ -88,8 +88,9 @@ resource "libvirt_domain" "vms" {
     disks = [
       {
         source = {
-          file = {
-            file = "/path/from/volume/output"
+          volume = {
+            pool = libvirt_volume.boot_volumes[each.key].pool
+            volume = libvirt_volume.boot_volumes[each.key].name
           }
         }
         target = {
@@ -144,5 +145,24 @@ resource "libvirt_volume" "cloudinit_volumes" {
     content = {
       url = libvirt_cloudinit_disk.inits[each.key].path
     }
+  }
+}
+
+resource "libvirt_volume" "boot_volumes" {
+  for_each = var.vm_specs
+  name = "cluster-boot-${each.key}"
+  pool = "default"
+  target = {
+    format = {
+      type = "qcow2"
+    }
+  }
+  
+  capacity = each.value.capacity
+  capacity_unit = each.value.capacity_unit
+
+  backing_store = {
+    path = libvirt_volume.debian_cloud_base.path
+    format = libvirt_volume.debian_cloud_base.target.format
   }
 }
