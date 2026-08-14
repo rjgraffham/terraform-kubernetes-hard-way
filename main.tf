@@ -116,6 +116,9 @@ resource "libvirt_domain" "vms" {
         }
       }
     ]
+    graphics = [{
+      spice = {}
+    }]
   }
 }
 
