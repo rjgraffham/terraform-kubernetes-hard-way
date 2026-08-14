@@ -69,6 +69,14 @@ resource "libvirt_domain" "vms" {
   vcpu = 1
   type = "kvm"
 
+  metadata = {
+    xml = <<-EOX
+      <libosinfo:libosinfo xmlns:libosinfo="http://libosinfo.org/xmlns/libvirt/domain/1.0">
+        <libosinfo:os id="http://debian.org/debian/12"/>
+      </libosinfo:libosinfo>
+    EOX
+  }
+
   os = {
     type = "hvm"
     type_arch = "x86_64"
@@ -78,6 +86,41 @@ resource "libvirt_domain" "vms" {
         dev = "hd"
       }
     ]
+  }
+
+  cpu = {
+    mode = "host-passthrough"
+  }
+
+  features = {
+    acpi = true
+    apic = {}
+  }
+
+  clock = {
+    timer = [
+      {
+        name = "rtc"
+        tick_policy = "catchup"
+      },
+      {
+        name = "pit"
+        tick_policy = "delay"
+      },
+      {
+        name = "hpet"
+        present = "no"
+      }
+    ]
+  }
+
+  pm = {
+    suspend_to_disk = {
+      enabled = "no"
+    }
+    suspend_to_mem = {
+      enabled = "no"
+    }
   }
 
   devices = {
@@ -100,6 +143,10 @@ resource "libvirt_domain" "vms" {
     ]
     interfaces = [
       {
+        model = {
+          type = "virtio"
+        }
+
         source = {
           network = {
             network = libvirt_network.cluster_net.name
@@ -109,6 +156,12 @@ resource "libvirt_domain" "vms" {
     ]
     graphics = [{
       spice = {}
+    }]
+    rngs = [{
+      model = "virtio"
+      backend = {
+        random = "/dev/urandom"
+      }
     }]
   }
 }
