@@ -25,6 +25,7 @@ variable "vm_specs" {
       memory_unit = "MiB"
       capacity = 10
       capacity_unit = "GiB"
+      address = "192.168.122.2"
     }
     server = {
       hostname = "server"
@@ -32,6 +33,7 @@ variable "vm_specs" {
       memory_unit = "GiB"
       capacity = 20
       capacity_unit = "GiB"
+      address = "192.168.122.3"
     }
     node0 = {
       hostname = "node-0"
@@ -39,6 +41,7 @@ variable "vm_specs" {
       memory_unit = "GiB"
       capacity = 20
       capacity_unit = "GiB"
+      address = "192.168.122.4"
     }
     node1 = {
       hostname = "node-1"
@@ -46,8 +49,20 @@ variable "vm_specs" {
       memory_unit = "GiB"
       capacity = 20
       capacity_unit = "GiB"
+      address = "192.168.122.5"
     }
   }
+}
+
+resource "libvirt_network" "cluster_net" {
+  name = "cluster"
+  forward = {
+    mode = "nat"
+  }
+  ips = [{
+    address = "192.168.122.0"
+    netmask = "255.255.255.0"
+  }]
 }
 
 resource "libvirt_domain" "vms" {
@@ -97,16 +112,12 @@ resource "libvirt_domain" "vms" {
     ]
     interfaces = [
       {
+        ip = [{
+          address = each.value.address
+        }]
         source = {
-          internal = {
-            name = "cluster-internal"
-          }
-        }
-      },
-      {
-        source = {
-          bridge = {
-            bridge = "virbr0"
+          network = {
+            network = libvirt_network.cluster_net.name
           }
         }
       }
