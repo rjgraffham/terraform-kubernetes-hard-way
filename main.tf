@@ -131,7 +131,7 @@ resource "libvirt_cloudinit_disk" "inits" {
 
 resource "libvirt_volume" "cloudinit_volumes" {
   for_each = var.vm_specs
-  name = "cluster-cloudinit-${each.key}"
+  name = "cluster-cloudinit-${each.key}.iso"
   pool = "default"
 
   create = {
@@ -143,7 +143,7 @@ resource "libvirt_volume" "cloudinit_volumes" {
 
 resource "libvirt_volume" "boot_volumes" {
   for_each = var.vm_specs
-  name = "cluster-boot-${each.key}"
+  name = "cluster-boot-${each.key}.qcow2"
   pool = "default"
   target = {
     format = {
