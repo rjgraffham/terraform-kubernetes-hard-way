@@ -98,6 +98,8 @@ resource "libvirt_domain" "vms" {
   vcpu = 1
   type = "kvm"
 
+  running = true
+
   metadata = {
     xml = <<-EOX
       <libosinfo:libosinfo xmlns:libosinfo="http://libosinfo.org/xmlns/libvirt/domain/1.0">
