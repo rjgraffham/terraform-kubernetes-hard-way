@@ -11,7 +11,7 @@ resource "libvirt_volume" "debian_cloud_base" {
 
   create = {
     content = {
-      url = "https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-amd64.qcow2"
+      url = "https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-nocloud-amd64.qcow2"
     }
   }
 }
@@ -93,17 +93,8 @@ resource "libvirt_domain" "vms" {
           dev = "vda"
           bus = "virtio"
         }
-      },
-      {
-        source = {
-          volume = {
-            pool = libvirt_volume.cloudinit_volumes[each.key].pool
-            volume = libvirt_volume.cloudinit_volumes[each.key].name
-          }
-        }
-        target = {
-          dev = "vdb"
-          bus = "virtio"
+        driver = {
+          type = "qcow2"
         }
       }
     ]
@@ -119,28 +110,6 @@ resource "libvirt_domain" "vms" {
     graphics = [{
       spice = {}
     }]
-  }
-}
-
-resource "libvirt_cloudinit_disk" "inits" {
-  for_each = var.vm_specs
-  name = "cluster-init-${each.key}"
-  user_data = file("user-data.yaml")
-  meta_data = yamlencode({
-    instance-id    = each.key
-    local-hostname = each.value.hostname
-  })
-}
-
-resource "libvirt_volume" "cloudinit_volumes" {
-  for_each = var.vm_specs
-  name = "cluster-cloudinit-${each.key}.iso"
-  pool = "default"
-
-  create = {
-    content = {
-      url = libvirt_cloudinit_disk.inits[each.key].path
-    }
   }
 }
 
