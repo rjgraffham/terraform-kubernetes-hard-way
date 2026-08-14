@@ -16,6 +16,16 @@ resource "libvirt_volume" "debian_cloud_base" {
   }
 }
 
+variable "ip_prefix" {
+  type = string
+  default = "192.168.122"
+}
+
+variable "mac_prefix" {
+  type = string
+  default = "db:5b:0d:fa:aa"
+}
+
 variable "vm_specs" {
   type = map(map(string))
   default = {
@@ -25,6 +35,8 @@ variable "vm_specs" {
       memory_unit = "MiB"
       capacity = 10
       capacity_unit = "GiB"
+      ip_last_octet = "2"
+      mac_last_octet = "02"
     }
     server = {
       hostname = "server"
@@ -32,6 +44,8 @@ variable "vm_specs" {
       memory_unit = "GiB"
       capacity = 20
       capacity_unit = "GiB"
+      ip_last_octet = "3"
+      mac_last_octet = "03"
     }
     node0 = {
       hostname = "node-0"
@@ -39,6 +53,8 @@ variable "vm_specs" {
       memory_unit = "GiB"
       capacity = 20
       capacity_unit = "GiB"
+      ip_last_octet = "4"
+      mac_last_octet = "04"
     }
     node1 = {
       hostname = "node-1"
@@ -46,6 +62,8 @@ variable "vm_specs" {
       memory_unit = "GiB"
       capacity = 20
       capacity_unit = "GiB"
+      ip_last_octet = "5"
+      mac_last_octet = "05"
     }
   }
 }
@@ -56,12 +74,17 @@ resource "libvirt_network" "cluster_net" {
     mode = "nat"
   }
   ips = [{
-    address = "192.168.122.1"
+    address = "${var.ip_prefix}.1"
     netmask = "255.255.255.0"
     dhcp = {
+      hosts = [ for vm_key, vm_spec in var.vm_specs: {
+        mac = "${var.mac_prefix}:${vm_spec.mac_last_octet}"
+        ip = "${var.ip_prefix}.${vm_spec.ip_last_octet}"
+        name = "cluster-${vm_key}"
+      }]
       ranges = [{
-        start = "192.168.122.100"
-        end = "192.168.122.254"
+        start = "${var.ip_prefix}.100"
+        end = "${var.ip_prefix}.254"
       }]
     }
   }]
@@ -151,6 +174,11 @@ resource "libvirt_domain" "vms" {
       {
         model = {
           type = "virtio"
+        }
+
+        mac = {
+          address = "${var.mac_prefix}:${each.value.mac_last_octet}"
+          type = "static"
         }
 
         source = {
