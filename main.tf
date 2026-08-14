@@ -23,7 +23,7 @@ variable "ip_prefix" {
 
 variable "mac_prefix" {
   type = string
-  default = "db:5b:0d:fa:aa"
+  default = "de:2a:22:d8:2a"  # must be a locally administered unicast prefix
 }
 
 variable "vm_specs" {
