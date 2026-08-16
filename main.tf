@@ -59,6 +59,7 @@ variable "vm_specs" {
 
 resource "libvirt_network" "cluster_net" {
   name = "cluster"
+  autostart = true
   forward = {
     mode = "nat"
   }
